@@ -19,10 +19,8 @@ struct KeyboardLayoutView: View {
                     .frame(width: 96, height: 52)
             }
 
-            // 下段: fn ⌃ ⌥ ⌘ 英数 スペース かな ⌘
+            // 下段: ⌃ ⌥ ⌘ 英数 スペース かな ⌘ fn（fn🌐は右⌘の右側にある配列）
             HStack(spacing: 6) {
-                KeyCapView(key: .fn, selectedKey: $selectedKey)
-                    .frame(width: 60, height: 52)
                 KeyCapView(key: .control, selectedKey: $selectedKey)
                     .frame(width: 60, height: 52)
                 KeyCapView(key: .option, selectedKey: $selectedKey)
@@ -38,6 +36,8 @@ struct KeyboardLayoutView: View {
                     .frame(width: 64, height: 52)
                 KeyCapView(key: .commandRight, selectedKey: $selectedKey)
                     .frame(width: 72, height: 52)
+                KeyCapView(key: .fn, selectedKey: $selectedKey)
+                    .frame(width: 60, height: 52)
             }
 
             // 凡例

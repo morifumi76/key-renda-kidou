@@ -60,6 +60,8 @@ struct SettingsView: View {
         }
         .padding(20)
         .frame(width: 680)
+        // ウィンドウサイズ固定のため、余った縦スペースは下に寄せて内容を上詰めにする
+        .frame(maxHeight: .infinity, alignment: .top)
     }
 
     /// 全体設定（ノック間隔・自動起動・リセット）
