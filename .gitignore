@@ -1,0 +1,13 @@
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# ビルド成果物
+build/
+
+# macOS
+.DS_Store
+
+# 環境変数・秘密情報
+.env
+.env.*
