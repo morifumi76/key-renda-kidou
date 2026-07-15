@@ -35,6 +35,17 @@ struct KeyDetailPanel: View {
                     .foregroundStyle(.orange)
             }
 
+            // メモ（未登録キーにも付けられる。キーボードUIのキートップに表示される）
+            HStack(spacing: 12) {
+                Text("メモ：")
+                TextField("例: Notionを開く", text: memoBinding)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(maxWidth: 300)
+                Text("キーの下に表示されます")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             if binding != nil {
                 editForm
             } else {
@@ -163,6 +174,15 @@ struct KeyDetailPanel: View {
                 var updated = binding ?? KeyBinding()
                 updated.action.type = newValue
                 configStore.config.setBinding(updated, for: key)
+            }
+        )
+    }
+
+    private var memoBinding: Binding<String> {
+        Binding(
+            get: { configStore.config.memo(for: key) },
+            set: { newValue in
+                configStore.config.setMemo(newValue, for: key)
             }
         )
     }

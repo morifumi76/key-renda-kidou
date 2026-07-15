@@ -74,10 +74,21 @@ public struct KeyAction: Codable, Equatable {
 public struct KeyBinding: Codable, Equatable {
     public var trigger: TriggerCount
     public var action: KeyAction
+    /// 旧形式との互換用（メモは現在AppConfig.memosでキー単位に管理する）
+    public var memo: String
 
-    public init(trigger: TriggerCount = .double, action: KeyAction = KeyAction()) {
+    public init(trigger: TriggerCount = .double, action: KeyAction = KeyAction(), memo: String = "") {
         self.trigger = trigger
         self.action = action
+        self.memo = memo
+    }
+
+    // memoがない古い設定ファイルも読めるようにする（後方互換）
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        trigger = try container.decodeIfPresent(TriggerCount.self, forKey: .trigger) ?? .double
+        action = try container.decodeIfPresent(KeyAction.self, forKey: .action) ?? KeyAction()
+        memo = try container.decodeIfPresent(String.self, forKey: .memo) ?? ""
     }
 }
 
@@ -91,6 +102,8 @@ public struct AppConfig: Codable, Equatable {
     public var launchAtLogin: Bool
     /// キーごとの割り当て（キーはMonitoredKeyのrawValue）
     public var bindings: [String: KeyBinding]
+    /// キーごとのメモ（未登録キーにも付けられるよう割り当てとは別管理）
+    public var memos: [String: String]
 
     public static let defaultKnockInterval = 0.3
     public static let minKnockInterval = 0.2
@@ -100,12 +113,33 @@ public struct AppConfig: Codable, Equatable {
         knockInterval: Double = AppConfig.defaultKnockInterval,
         isEnabled: Bool = true,
         launchAtLogin: Bool = false,
-        bindings: [String: KeyBinding] = [:]
+        bindings: [String: KeyBinding] = [:],
+        memos: [String: String] = [:]
     ) {
         self.knockInterval = knockInterval
         self.isEnabled = isEnabled
         self.launchAtLogin = launchAtLogin
         self.bindings = bindings
+        self.memos = memos
+    }
+
+    // memosがない古い設定ファイルも読めるようにする（後方互換）
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        knockInterval = try container.decodeIfPresent(Double.self, forKey: .knockInterval)
+            ?? AppConfig.defaultKnockInterval
+        isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
+        launchAtLogin = try container.decodeIfPresent(Bool.self, forKey: .launchAtLogin) ?? false
+        bindings = try container.decodeIfPresent([String: KeyBinding].self, forKey: .bindings) ?? [:]
+        memos = try container.decodeIfPresent([String: String].self, forKey: .memos) ?? [:]
+
+        // 旧形式（メモが割り当て側に保存されていた）からの移行
+        for (key, binding) in bindings where !binding.memo.isEmpty {
+            if (memos[key] ?? "").isEmpty {
+                memos[key] = binding.memo
+            }
+            bindings[key]?.memo = ""
+        }
     }
 
     public func binding(for key: MonitoredKey) -> KeyBinding? {
@@ -114,5 +148,13 @@ public struct AppConfig: Codable, Equatable {
 
     public mutating func setBinding(_ binding: KeyBinding?, for key: MonitoredKey) {
         bindings[key.rawValue] = binding
+    }
+
+    public func memo(for key: MonitoredKey) -> String {
+        memos[key.rawValue] ?? ""
+    }
+
+    public mutating func setMemo(_ memo: String, for key: MonitoredKey) {
+        memos[key.rawValue] = memo.isEmpty ? nil : memo
     }
 }

@@ -1,5 +1,6 @@
 import KeyRendaKidouCore
 import SwiftUI
+import AppKit
 
 /// 設定画面のルートビュー
 struct SettingsView: View {
@@ -64,9 +65,25 @@ struct SettingsView: View {
         .frame(maxHeight: .infinity, alignment: .top)
     }
 
-    /// 全体設定（ノック間隔・自動起動・リセット）
+    /// 全体設定（有効化・ノック間隔・自動起動・リセット・終了）
+    /// メニューバーが満杯でアイコンが隠れても、この画面だけで全操作できるようにしておく
     private var generalSettings: some View {
         VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 16) {
+                Toggle("キー連打での起動を有効にする", isOn: Binding(
+                    get: { configStore.config.isEnabled },
+                    set: { appState.setEnabled($0) }
+                ))
+                .help("メニューバーの「有効にする」と同じ設定です。")
+
+                Spacer()
+
+                Button("アプリを終了") {
+                    NSApplication.shared.terminate(nil)
+                }
+                .help("常駐を終了します（メニューバーの「終了」と同じです）。")
+            }
+
             HStack {
                 Text("ノック間隔")
                 Slider(

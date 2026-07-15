@@ -21,9 +21,10 @@ rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR/Contents/MacOS" "$APP_DIR/Contents/Resources"
 cp ".build/release/KeyRendaKidou" "$APP_DIR/Contents/MacOS/${APP_NAME}"
 cp "scripts/Info.plist" "$APP_DIR/Contents/Info.plist"
+cp "scripts/AppIcon.icns" "$APP_DIR/Contents/Resources/AppIcon.icns"
 
 echo "▶ 署名中（ad-hoc署名）..."
-codesign --force --sign - --identifier "com.morifumi.key-renda-kidou" "$APP_DIR"
+codesign --force --sign - --identifier "com.johosauce.key-renda-kidou" "$APP_DIR"
 
 echo "✅ 完成: $APP_DIR"
 
@@ -45,6 +46,8 @@ if [[ "${1:-}" == "--install" ]]; then
     echo "▶ アプリを起動します..."
     open "$INSTALL_DIR/${APP_NAME}.app"
     echo ""
-    echo "【注意】再ビルド後は署名が変わるため、システム設定 → プライバシーとセキュリティ →"
-    echo "「入力監視」で key-renda-kidou を一度オフ→オンにし直す必要がある場合があります。"
+    echo "【注意】再ビルド後は署名が変わるため、「入力監視」の許可が効かなくなった場合は"
+    echo "システム設定 → 入力監視 で key-renda-kidou を一度オフ→オンしてください。"
+    echo "それでも直らない場合のみ「−」で削除 →「＋」で追加し直してください。"
+    echo "（tccutil reset は手動追加した許可も消してしまうため自動実行しない）"
 fi

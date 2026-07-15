@@ -21,7 +21,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
             let newWindow = NSWindow(contentViewController: hosting)
             newWindow.title = "key-renda-kidou 設定"
             newWindow.styleMask = [.titled, .closable, .miniaturizable]
-            newWindow.setContentSize(NSSize(width: 680, height: 720))
+            newWindow.setContentSize(NSSize(width: 680, height: 860))
             newWindow.isReleasedWhenClosed = false
             newWindow.delegate = self
             newWindow.center()

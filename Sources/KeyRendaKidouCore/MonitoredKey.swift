@@ -62,8 +62,8 @@ public enum MonitoredKey: String, CaseIterable, Codable, Identifiable {
         case .control:                    return "⌃"
         case .option:                     return "⌥"
         case .fn:                         return "fn 🌐"
-        case .eisu:                       return "英数"
-        case .kana:                       return "かな"
+        case .eisu:                       return "ABC"
+        case .kana:                       return "あいう"
         }
     }
 

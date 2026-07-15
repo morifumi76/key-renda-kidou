@@ -17,6 +17,9 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         // ドラッグでの取り外し（＝アプリ終了の事故）を許可しない
         item.behavior = []
+        // 既定の識別名「Item-0」にはmacOS側に「非表示」が記憶されてしまっているため、
+        // 新しい識別名を付けてまっさらな状態で登録する
+        item.autosaveName = "knock-icon-v2"
         item.isVisible = true
 
         let menu = NSMenu()

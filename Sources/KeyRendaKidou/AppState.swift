@@ -61,12 +61,23 @@ final class AppState: ObservableObject {
 
     /// アプリ起動時に呼ぶ
     func startup() {
+        // 設定上は自動起動ONなのにOSに未登録なら登録し直す
+        // （バンドルID変更などで登録が外れた場合の自動復旧）
+        if configStore.config.launchAtLogin,
+           LoginItemManager.isAvailable,
+           !LoginItemManager.isRegistered {
+            LoginItemManager.setEnabled(true)
+        }
+
         hasPermission = PermissionManager.hasInputMonitoringPermission
         if hasPermission {
             startMonitoring()
         } else {
-            // システム設定の「入力監視」一覧に本アプリを載せるためリクエストしておく
+            // システム設定の「入力監視」一覧に本アプリを載せるためリクエストしておく。
+            // さらにイベントタップ生成も一度試みる（失敗しても、この試行が
+            // 一覧への登録トリガーになる。リクエストAPIだけでは載らない場合がある）
             PermissionManager.requestPermission()
+            _ = monitor.start()
             iconState = .warning
             startPermissionPolling()
         }

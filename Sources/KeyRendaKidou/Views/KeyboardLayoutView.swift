@@ -8,7 +8,16 @@ struct KeyboardLayoutView: View {
 
     var body: some View {
         VStack(spacing: 6) {
-            // 上段: Shift行（左右の⇧のみ対象。間は対象外キーのイメージ）
+            // Aの段: 左端がcontrol（JIS配列ではShiftの1つ上の段にある）
+            HStack(spacing: 6) {
+                KeyCapView(key: .control, selectedKey: $selectedKey)
+                    .frame(width: 84, height: 52)
+                InertKeyView(label: "A 〜 ⏎（対象外）")
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+            }
+
+            // Zの段: 左右の⇧のみ対象。間は対象外キーのイメージ
             HStack(spacing: 6) {
                 KeyCapView(key: .shiftLeft, selectedKey: $selectedKey)
                     .frame(width: 96, height: 52)
@@ -19,9 +28,9 @@ struct KeyboardLayoutView: View {
                     .frame(width: 96, height: 52)
             }
 
-            // 下段: ⌃ ⌥ ⌘ 英数 スペース かな ⌘ fn（fn🌐は右⌘の右側にある配列）
+            // 最下段: ⇪ ⌥ ⌘ 英数 スペース かな ⌘ fn（fn🌐は右⌘の右側にある配列）
             HStack(spacing: 6) {
-                KeyCapView(key: .control, selectedKey: $selectedKey)
+                InertKeyView(label: "⇪")
                     .frame(width: 60, height: 52)
                 KeyCapView(key: .option, selectedKey: $selectedKey)
                     .frame(width: 60, height: 52)
@@ -73,16 +82,15 @@ struct KeyCapView: View {
             VStack(spacing: 2) {
                 Text(key.shortLabel)
                     .font(.system(size: 15, weight: .medium))
-                if let binding {
-                    Text(binding.trigger.displayName)
-                        .font(.system(size: 9))
-                        .opacity(0.85)
-                } else {
-                    Text("未登録")
-                        .font(.system(size: 9))
-                        .opacity(0.5)
-                }
+                // ユーザーが入力したメモを表示する（未登録キーでも表示できる）
+                let memo = configStore.config.memo(for: key)
+                Text(memo.isEmpty ? " " : memo)
+                    .font(.system(size: 9))
+                    .opacity(isBound ? 0.85 : 0.6)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
+            .padding(.horizontal, 2)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(
                 RoundedRectangle(cornerRadius: 8)
@@ -178,10 +186,13 @@ struct KeyListRow: View {
                 Text(key.displayName)
                     .frame(width: 160, alignment: .leading)
 
+                let memo = configStore.config.memo(for: key)
+                Text(memo.isEmpty ? "（メモなし）" : memo)
+                    .foregroundStyle(memo.isEmpty ? .tertiary : .secondary)
+                    .frame(width: 120, alignment: .leading)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
                 if let binding {
-                    Text(binding.trigger.displayName)
-                        .foregroundStyle(.secondary)
-                        .frame(width: 70, alignment: .leading)
                     Text(actionSummary(binding.action))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
