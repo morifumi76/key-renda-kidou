@@ -83,8 +83,12 @@ final class EventTapMonitor {
         detector.reset()
     }
 
+    /// ユーザーが無効化中かどうか（スリープ復帰処理で勝手に再開しないための記録）
+    private var isPaused = false
+
     /// 一時停止/再開（メニューの有効/無効切り替え用）
     func setPaused(_ paused: Bool) {
+        isPaused = paused
         guard let tap = eventTap else { return }
         CGEvent.tapEnable(tap: tap, enable: !paused)
         if paused {
@@ -94,12 +98,17 @@ final class EventTapMonitor {
         }
     }
 
-    /// スリープ復帰後などにタップが生きているか確認し、必要なら再有効化する
+    /// スリープ復帰・画面ロック解除後にタップと押下追跡を復旧する
     func reviveIfNeeded() {
         guard let tap = eventTap else { return }
+        // スリープ中のイベント取りこぼしで押下追跡が狂っている可能性があるため必ずリセットする
+        heldModifierKeyCodes.removeAll()
+        heldOtherModifierKeyCodes.removeAll()
+        detector.reset()
+        // ユーザーがOFFにしている間は勝手に再開しない
+        guard !isPaused else { return }
         if !CGEvent.tapIsEnabled(tap: tap) {
             CGEvent.tapEnable(tap: tap, enable: true)
-            detector.reset()
         }
     }
 
@@ -121,14 +130,17 @@ final class EventTapMonitor {
         switch type {
         case .flagsChanged:
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
-            if let key = MonitoredKey.from(keyCode: keyCode), key.isModifier {
-                // 押し/離しはトグルで判定する
-                if heldModifierKeyCodes.contains(keyCode) {
-                    heldModifierKeyCodes.remove(keyCode)
-                    detector.monitoredKeyUp(key, at: time)
-                } else {
+            if let key = MonitoredKey.from(keyCode: keyCode), key.isModifier,
+               let mask = key.deviceFlagMask {
+                // イベントの実フラグから押し/離しを判定する
+                // （トグル推測はスリープ復帰などでイベントを取りこぼすと逆転するため使わない）
+                let pressed = (event.flags.rawValue & mask) != 0
+                if pressed && !heldModifierKeyCodes.contains(keyCode) {
                     heldModifierKeyCodes.insert(keyCode)
                     detector.monitoredKeyDown(key, at: time)
+                } else if !pressed && heldModifierKeyCodes.contains(keyCode) {
+                    heldModifierKeyCodes.remove(keyCode)
+                    detector.monitoredKeyUp(key, at: time)
                 }
             } else {
                 // 対象外の修飾キー（Caps Lock等）。押した瞬間だけ「他のキー」として扱う

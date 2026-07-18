@@ -49,9 +49,19 @@ final class AppState: ObservableObject {
             self?.fire(key)
         }
 
-        // スリープ復帰後にタップを復活させる
+        // スリープ復帰後にタップと押下追跡を復旧させる
         NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didWakeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.monitor.reviveIfNeeded()
+        }
+
+        // 画面ロック解除後も復旧させる
+        // （ロック中はパスワード入力イベントが届かず、押下追跡が狂うことがあるため）
+        DistributedNotificationCenter.default().addObserver(
+            forName: Notification.Name("com.apple.screenIsUnlocked"),
             object: nil,
             queue: .main
         ) { [weak self] _ in

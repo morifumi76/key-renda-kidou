@@ -39,6 +39,21 @@ public enum MonitoredKey: String, CaseIterable, Codable, Identifiable {
         }
     }
 
+    /// flagsChangedイベントの実フラグから押下状態を判定するためのデバイス固有ビット
+    /// （IOKitのNX_DEVICE*KEYMASK。左右のキーを個別に判定できる）
+    public var deviceFlagMask: UInt64? {
+        switch self {
+        case .control:      return 0x0000_0001 // NX_DEVICELCTLKEYMASK
+        case .shiftLeft:    return 0x0000_0002 // NX_DEVICELSHIFTKEYMASK
+        case .shiftRight:   return 0x0000_0004 // NX_DEVICERSHIFTKEYMASK
+        case .commandLeft:  return 0x0000_0008 // NX_DEVICELCMDKEYMASK
+        case .commandRight: return 0x0000_0010 // NX_DEVICERCMDKEYMASK
+        case .option:       return 0x0000_0020 // NX_DEVICELALTKEYMASK
+        case .fn:           return 0x0080_0000 // NX_SECONDARYFNMASK
+        case .eisu, .kana:  return nil
+        }
+    }
+
     /// 設定画面などで表示する正式名称
     public var displayName: String {
         switch self {
