@@ -12,7 +12,16 @@ enum ActionExecutor {
                 NSLog("無効なURLのため開けませんでした: \(action.url)")
                 return
             }
-            NSWorkspace.shared.open(url)
+            guard action.openInCurrentTab else {
+                NSWorkspace.shared.open(url)
+                return
+            }
+            // 今のタブで開けなかった場合（ブラウザ未対応・ウィンドウ無し・未許可）は新しいタブで開く
+            BrowserTabController.openInCurrentTab(url) { succeeded in
+                if !succeeded {
+                    NSWorkspace.shared.open(url)
+                }
+            }
 
         case .launchApp:
             let appURL = URL(fileURLWithPath: action.appPath)

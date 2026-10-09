@@ -39,12 +39,31 @@ public struct KeyAction: Codable, Equatable {
     public var appPath: String
     /// 表示用のアプリ名
     public var appName: String
+    /// type == .openURL のとき、新しいタブではなく今開いているタブで開くか
+    public var openInCurrentTab: Bool
 
-    public init(type: ActionType = .openURL, url: String = "", appPath: String = "", appName: String = "") {
+    public init(
+        type: ActionType = .openURL,
+        url: String = "",
+        appPath: String = "",
+        appName: String = "",
+        openInCurrentTab: Bool = false
+    ) {
         self.type = type
         self.url = url
         self.appPath = appPath
         self.appName = appName
+        self.openInCurrentTab = openInCurrentTab
+    }
+
+    // openInCurrentTabがない古い設定ファイルも読めるようにする（後方互換）
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        type = try container.decodeIfPresent(ActionType.self, forKey: .type) ?? .openURL
+        url = try container.decodeIfPresent(String.self, forKey: .url) ?? ""
+        appPath = try container.decodeIfPresent(String.self, forKey: .appPath) ?? ""
+        appName = try container.decodeIfPresent(String.self, forKey: .appName) ?? ""
+        openInCurrentTab = try container.decodeIfPresent(Bool.self, forKey: .openInCurrentTab) ?? false
     }
 
     /// アクションとして実行可能な状態か

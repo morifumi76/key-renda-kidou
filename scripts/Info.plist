@@ -26,6 +26,8 @@
 	<string>14.0</string>
 	<key>LSUIElement</key>
 	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>「今開いているタブで開く」設定のとき、ブラウザの表示中のタブを指定したURLに切り替えるために使用します。</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>

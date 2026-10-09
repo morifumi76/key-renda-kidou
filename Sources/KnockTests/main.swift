@@ -202,6 +202,25 @@ test("ノック間隔の設定値が反映される（0.5秒なら遅めの連�
     return fired() == [.commandLeft]
 }
 
+// MARK: - 設定ファイルの後方互換
+
+test("openInCurrentTabがない古い設定は「新しいタブで開く」として読み込まれる") {
+    let oldJSON = #"{"type":"openURL","url":"https://www.example.com","appPath":"","appName":""}"#
+    guard let action = try? JSONDecoder().decode(KeyAction.self, from: Data(oldJSON.utf8)) else {
+        return false
+    }
+    return action.url == "https://www.example.com" && action.openInCurrentTab == false
+}
+
+test("openInCurrentTabの設定が保存→読み込みで保持される") {
+    let original = KeyAction(url: "https://www.example.com", openInCurrentTab: true)
+    guard let data = try? JSONEncoder().encode(original),
+          let decoded = try? JSONDecoder().decode(KeyAction.self, from: data) else {
+        return false
+    }
+    return decoded == original
+}
+
 // MARK: - 結果
 
 print("\n=== 結果: \(passCount)件成功 / \(failCount)件失敗 ===")

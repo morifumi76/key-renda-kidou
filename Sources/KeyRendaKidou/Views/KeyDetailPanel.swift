@@ -99,6 +99,10 @@ struct KeyDetailPanel: View {
                 }
             }
 
+            if actionTypeBinding.wrappedValue == .openURL {
+                openInCurrentTabToggle
+            }
+
             // バリデーション結果の表示
             validationStatus
         }
@@ -110,6 +114,17 @@ struct KeyDetailPanel: View {
         TextField("https://www.example.com", text: urlBinding)
             .textFieldStyle(.roundedBorder)
             .frame(maxWidth: .infinity)
+    }
+
+    /// 新しいタブで開くか、今開いているタブを切り替えるかの選択
+    private var openInCurrentTabToggle: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Toggle("今開いているタブで開く（オフの場合は新しいタブで開く）", isOn: openInCurrentTabBinding)
+                .toggleStyle(.checkbox)
+            Text("対応ブラウザ: Google Chrome / Safari。初回のみブラウザ操作の許可が求められます。")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 
     private var appPickerField: some View {
@@ -193,6 +208,17 @@ struct KeyDetailPanel: View {
             set: { newValue in
                 var updated = binding ?? KeyBinding()
                 updated.action.url = newValue
+                configStore.config.setBinding(updated, for: key)
+            }
+        )
+    }
+
+    private var openInCurrentTabBinding: Binding<Bool> {
+        Binding(
+            get: { binding?.action.openInCurrentTab ?? false },
+            set: { newValue in
+                var updated = binding ?? KeyBinding()
+                updated.action.openInCurrentTab = newValue
                 configStore.config.setBinding(updated, for: key)
             }
         )
